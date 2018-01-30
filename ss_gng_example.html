@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=no">
+    <title>SS GNG example</title>
+    <script src = "../../shared_assets/jspsych-6.0.1/jspsych.js" type="text/javascript"></script>
+    <script src = "../../shared_assets/jspsych-6.0.1/plugins/jspsych-image-keyboard-response.js" type="text/javascript"></script>
+    <script src = "../../shared_assets/jspsych-6.0.1/plugins/jspsych-call-function.js" type="text/javascript"></script>
+    <script src = "jspsych-stop-signal-go-no-go.js" type="text/javascript"></script>
+    <!-- <script src= "/assets/javascripts/jatos.js"></script> -->
+    <link rel = "stylesheet" type="text/css" href="../../shared_assets/jspsych-6.0.1/css/jspsych.css">
+    <style type = "text/css">.jspsych-content-wrapper {background-color: rgb(195,195,195);}</style>
+</head>
+<body>
+</body>
+<script type="text/javascript">
+// jatos.onLoad(function() {
+
+    // 480 go trials, 60 no-go trials, 120 stop signal trials
+
+    var max_resp_time = 1000;
+    var max_go_display = 1000;
+    var min_iti = 500;
+    var max_iti = 1500;
+    var starting_ss_onset = 200;
+
+    var timeline = [];
+
+    var current_ss_onset = 0;
+    var mean_rt = 0;
+    // var acc_proportion = 0;
+
+    // helper functions
+    function getCurrentIti() {
+        return Math.floor(Math.random()*(max_iti-min_iti))+min_iti;
+    }
+
+    function getMeanValidRt(data) {
+        // get only the SS GNG trials (ignoring fixations, etc), then get only the trials where the RT is not null (i.e. a response was made), then get the RT from each trial object
+        var resp_trial_rts = data.filter({trial_type: "stop-signal-go-no-go"}).filterCustom(function(trial) {return trial.rt !== null;}).select('rt');
+        var n_valid_trials = resp_trial_rts.count();
+        var mean_rt = resp_trial_rts.sum()/n_valid_trials;
+        console.log('starting mean RT: ', mean_rt);
+        rt_obj = {mean_rt: mean_rt, n_valid: n_valid_trials};
+        return rt_obj;
+    }
+
+    // define trials
+    var start_trials = {
+        timeline: [
+            {
+                type: 'image-keyboard-response',
+                stimulus: 'images/fixation.bmp',
+                choices: ['leftarrow','rightarrow'],
+                trial_duration: 500,
+                response_ends_trial: false,
+                data: {correct: null, task_segment: 'start_trials'},
+                on_finish: function(data) {
+                    if (data.key_press == data.correct) {
+                        data.accuracy = 1;
+                    } else {
+                        data.accuracy = 0;
+                    }
+                    if (data.key_press == 37) { // 37 = left, 39 = right
+                        data.key_press_dir = 'left';
+                    } else if (data.key_press == 39) {
+                        data.key_press_dir = 'right';
+                    } else {
+                        data.key_press_dir = 'none';
+                    }
+                }
+            },
+            {
+                type: 'stop-signal-go-no-go',
+                go_stimulus: jsPsych.timelineVariable('go_stim'),
+                no_go_stimulus: jsPsych.timelineVariable('no_go_stim'),
+                stop_audio: 'audio/A1.wav',
+                choices: ['leftarrow','rightarrow'],
+                trial_type_ss_gng: jsPsych.timelineVariable('trial_type_ss_gng'),
+                stop_signal_onset: 200,
+                trial_duration: 1000,
+                response_ends_trial: true,
+                post_trial_gap: getCurrentIti,
+                data: jsPsych.timelineVariable('data'),
+                on_finish: function(data) {
+                    if (data.key_press == data.correct) {
+                        data.accuracy = 1;
+                    } else {
+                        data.accuracy = 0;
+                    }
+                    if (data.key_press == 37) { // 37 = left, 39 = right
+                        data.key_press_dir = 'left';
+                    } else if (data.key_press == 39) {
+                        data.key_press_dir = 'right';
+                    } else {
+                        data.key_press_dir = 'none';
+                    }
+                }
+            }
+        ],
+        timeline_variables: [ 
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'start_trials'}}
+        ],
+        randomize_order: true
+    };
+    timeline.push(start_trials);
+
+    var check_mean_rt = {
+        type: 'call-function',
+        func: function() {
+        },
+        on_finish: function(data) {
+            // get the mean RT and number of valid trials from the start_trials
+            rt_obj = getMeanValidRt(jsPsych.data.getLastTimelineData());
+            var mean_rt_start_trials = rt_obj.mean_rt;
+            var n_valid_start_trials = rt_obj.n_valid;
+            // set values of global variables
+            mean_rt = mean_rt_start_trials;
+            if (mean_rt >= starting_ss_onset) {
+                current_ss_onset = mean_rt - starting_ss_onset;
+            } else {
+                current_ss_onset = starting_ss_onset;
+            }
+            console.log('starting SS onset ', current_ss_onset);
+            // add everything to the data for this trial
+            data.mean_rt = mean_rt_start_trials;
+            data.n_valid = n_valid_start_trials;
+            data.SS_onset = current_ss_onset;
+            data.task_segment = 'get_start_trial_info';
+        }
+    };
+    timeline.push(check_mean_rt);
+
+    var main_trials = {
+        timeline: [
+            {
+                type: 'image-keyboard-response',
+                stimulus: 'images/fixation.bmp',
+                choices: ['leftarrow','rightarrow'],
+                trial_duration: 500,
+                response_ends_trial: false,
+                data: {correct: null, task_segment: 'main_trials'},
+                on_finish: function(data) {
+                    if (data.key_press == data.correct) {
+                        data.accuracy = 1;
+                    } else {
+                        data.accuracy = 0;
+                    }
+                    if (data.key_press == 37) { // 37 = left, 39 = right
+                        data.key_press_dir = 'left';
+                    } else if (data.key_press == 39) {
+                        data.key_press_dir = 'right';
+                    } else {
+                        data.key_press_dir = 'none';
+                    }
+                }
+            },
+            {
+                type: 'stop-signal-go-no-go',
+                go_stimulus: jsPsych.timelineVariable('go_stim'),
+                no_go_stimulus: jsPsych.timelineVariable('no_go_stim'),
+                stop_audio: 'audio/A1.wav',
+                choices: ['leftarrow','rightarrow'],
+                trial_type_ss_gng: jsPsych.timelineVariable('trial_type_ss_gng'),
+                //stop_signal_onset: function() {return getSsOnset(mean_rt, current_ss_onset);},
+                stop_signal_onset: function() {return current_ss_onset;},
+                trial_duration: 1000,
+                response_ends_trial: true,
+                post_trial_gap: getCurrentIti,
+                data: jsPsych.timelineVariable('data'),
+                on_finish: function(data) {
+                    //data.SS_onset = current_ss_onset;
+                    if (data.key_press == data.correct) {
+                        data.accuracy = 1;
+                        if (data.trial_type_ss_gng == 'stop' && current_ss_onset <= 950) {
+                            // increase SS onset by 50 ms
+                            current_ss_onset += 50;
+                            console.log('stop trial correct, new SS onset ', current_ss_onset);  
+                        }
+                    } else {
+                        data.accuracy = 0;
+                        if (data.trial_type_ss_gng == 'stop' && current_ss_onset >= 50) {
+                            // decrease SS onset by 50 ms
+                            current_ss_onset -= 50; 
+                            console.log('stop trial incorrect, new SS onset ', current_ss_onset);
+                        }
+                    }
+                    // recode key press: 37 = left, 39 = right
+                    if (data.key_press == 37) { 
+                        data.key_press_dir = 'left';
+                    } else if (data.key_press == 39) {
+                        data.key_press_dir = 'right';
+                    } else {
+                        data.key_press_dir = 'none';
+                    }
+                }
+            }
+        ],
+        timeline_variables: [
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'stop', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: null, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'stop', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: null, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: 37, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'stop', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: null, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'go', go_stim: 'images/right_go.bmp', no_go_stim: 'images/right_stop.bmp', data: {direction: 'right', correct: 39, task_segment: 'main_trials'}},
+            {trial_type_ss_gng: 'stop', go_stim: 'images/left_go.bmp', no_go_stim: 'images/left_stop.bmp', data: {direction: 'left', correct: null, task_segment: 'main_trials'}}
+        ],
+        randomize_order: true,
+        repetitions: 5
+    };
+    timeline.push(main_trials);
+
+    jsPsych.init({
+        timeline: timeline,
+        //preload_audio: ['a1.wav'],
+        on_finish: function() {
+            jsPsych.data.displayData();
+            // accuracy for stop trials
+            var stop_trials = jsPsych.data.get().filter({task_segment: "main_trials",trial_type_ss_gng: "stop"}).select("accuracy");
+            var stop_trial_acc = stop_trials.sum()/stop_trials.count();
+            console.log('stop trials correct: ', stop_trials.sum());
+            console.log('stop trials count: ', stop_trials.count())
+            console.log('stop trial accuracy: ', stop_trial_acc);
+            //jatos.submitResultData(jsPsych.data.get().json(), jatos.startNextComponent);
+        }
+    });
+//});
+</script>
+</html>
