@@ -87,10 +87,17 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     var stop_signal_onset_log = null;
 
     // use a prefixed version of rAF if necessary
+    // from https://msdn.microsoft.com/en-us/library/hh920765(v=vs.85).aspx
+    // TO DO: record in results which method was used
     if (!window.requestAnimationFrame) {
       window.requestAnimationFrame =
       window.mozRequestAnimationFrame ||
-      window.webkitRequestAnimationFrame;
+      window.webkitRequestAnimationFrame ||
+      window.oRequestAnimationFrame ||
+      // if there's no support for rAF then fall back to set timeout at 60 fps
+      function(callback) {
+        return window.setTimeout(callback, 1000/60);
+      };
     }
 
     // set up first stimulus
