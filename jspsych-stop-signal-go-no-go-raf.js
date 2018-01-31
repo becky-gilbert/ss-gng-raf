@@ -85,6 +85,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       rt_manual: null
     };
     var stop_signal_onset_log = null;
+    var stop_signal_onset_adj = null;
 
     // use a prefixed version of rAF if necessary
     // from https://msdn.microsoft.com/en-us/library/hh920765(v=vs.85).aspx
@@ -158,6 +159,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         "trial_type_ss_gng": trial.trial_type_ss_gng, 
         "key_press": response.key,
         "stop_signal_onset": trial.stop_signal_onset,
+        "stop_signal_onset_adj": stop_signal_onset_adj,
         "stop_signal_onset_log": stop_signal_onset_log
       };
 
@@ -192,7 +194,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
     };
 
-    // TO DO: use requestAnimationFrame for all events that occur after a specific delay
+    // TO DO: use requestAnimationFrame for *all* events that occur after a specific delay
     // 1. stop_signal_onset to show the stop signal image/audio (if this is a stop trial)
     // 2. stimulus_duration to hide stim (if set)
     // 3. trial_duration to end trial (if set)
@@ -214,7 +216,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     // function to show stop signal image/audio
     function showStopSignal() {
       var ss_time = performance.now();
-     if (trial.stop_audio !== null) {
+      if (trial.stop_audio !== null) {
         // show image
         display_element.innerHTML = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="stop-img"></div>';
         // start audio
@@ -229,7 +231,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         display_element.innerHTML = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="stop-img"></div>';
       }
       stop_signal_onset_log = ss_time - start_time_manual;
-      console.log(stop_signal_onset_log);
+      console.log('SS onset: ', stop_signal_onset_log);
     }
 
     function checkForTimeouts(timestamp, intended_delay, event_fn) {
@@ -247,8 +249,16 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
 
     // if this is a stop trial and the stop signal time is valid, call rAF with SS parameters
     if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
+      var lower_dur = Math.floor(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
+      var upper_dur = Math.ceil(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
+      if ((trial.stop_signal_onset - lower_dur) <= (trial.est_frame_duration/2)) {
+        stop_signal_onset_adj = lower_dur;
+      } else {
+        stop_signal_onset_adj = upper_dur;
+      }
+      console.log('adjusted SS duration: ', stop_signal_onset_adj);
       window.requestAnimationFrame(function(timestamp) {
-        checkForTimeouts(timestamp, trial.stop_signal_onset, showStopSignal);
+        checkForTimeouts(timestamp, stop_signal_onset_adj, showStopSignal);
       });
     }
 
