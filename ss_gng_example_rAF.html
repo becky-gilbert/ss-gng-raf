@@ -51,7 +51,6 @@
         // document.querySelector('#jspsych-content-wrapper').innerHTML = '<div class = "jspsych-content">Please wait...</div>';        
         // from http://jsfiddle.net/bn8kbw3t/
         console.log('est fps timestamp: ',timestamp);
-        console.log('estimate frames per sec callback: ', callback);
         if (frame_count > 0) {
             var last_time = frame_times[frame_count-1];
             frame_diffs[frame_count-1] = timestamp - last_time; 
@@ -84,18 +83,17 @@
         return rt_obj;
     }
 
-    // estimate duration between frames
+    // trial to estimate duration between frames
     var est_fps_trial = {
         type: 'call-function-wait',
         func: function(callback) {
             window.requestAnimationFrame(function(timestamp) {
-                console.log('rAF call callback: ', callback);
                 estimateFramesPerSec(timestamp,callback);});
         },
     };
     timeline.push(est_fps_trial);
 
-    // define trials
+    // define starting set of go trials
     var start_trials = {
         timeline: [
             {
@@ -174,6 +172,7 @@
     };
     timeline.push(start_trials);
 
+    // get mean RT from first set of trials - this value will be used to set SS delay in later trials
     var check_mean_rt = {
         type: 'call-function',
         func: function() {
@@ -201,6 +200,7 @@
     };
     timeline.push(check_mean_rt);
 
+    // define remaining trials - go/no-go/stop
     var main_trials = {
         timeline: [
             {
