@@ -50,6 +50,11 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         default: 200,
         description: 'Time in ms from start of trial to when stop signal should appear.'
       },
+      est_frame_duration: {
+        type: jsPsych.plugins.parameterType.FLOAT,
+        default: 16.67,
+        description: 'Estimated duration between frames (in ms)'
+      },
       stimulus_duration: {
         type: jsPsych.plugins.parameterType.INT,
         pretty_name: 'Stimulus duration',
@@ -180,7 +185,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
     };
 
-    // for all events that should occur after a specific delay, use requestAnimationFrame so that the real delay is as close as possible to the intended delay
+    // TO DO: use requestAnimationFrame for all events that occur after a specific delay
     // 1. stop_signal_onset to show the stop signal image/audio (if this is a stop trial)
     // 2. stimulus_duration to hide stim (if set)
     // 3. trial_duration to end trial (if set)
