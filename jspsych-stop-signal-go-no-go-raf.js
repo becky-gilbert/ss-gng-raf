@@ -156,6 +156,8 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     // function to handle responses by the subject
     var after_response = function(info) {  
 
+      // cancel any existing rAF callbacks
+
       // get timestamp to compare to start_time_manual, to get a manual RT measure
       var end_time_manual = performance.now();
       var rt_manual = end_time_manual - start_time_manual;
@@ -214,7 +216,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         display_element.innerHTML = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="stop-img"></div>';
       }
       stop_signal_onset_log = ss_time - start_time_manual;
-      console.log('SS onset: ', stop_signal_onset_log);
+      console.log('logged SS onset: ', stop_signal_onset_log);
     }
 
     function checkForTimeouts(timestamp, intended_delay, event_fn) {
@@ -253,9 +255,10 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         } else {
           stop_signal_onset_adj = upper_dur;
         }
-        console.log('adjusted SS duration: ', stop_signal_onset_adj);
+        console.log('adjusted SS target onset: ', stop_signal_onset_adj);
         window.requestAnimationFrame(function(timestamp) {
-          checkForTimeouts(timestamp, stop_signal_onset_adj, showStopSignal);
+          // subtract 2 from adjusted intended delay to account for rounding errors
+          checkForTimeouts(timestamp, stop_signal_onset_adj - 2, showStopSignal);
         });
       }
     });
