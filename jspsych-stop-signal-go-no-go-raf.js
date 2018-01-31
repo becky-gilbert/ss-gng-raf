@@ -228,7 +228,8 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     function checkForTimeouts(timestamp, intended_delay, event_fn) {
       // compare current timestamp to that from the first stim onset to get the current time relative to stim onset
       var curr_delay = timestamp - start_time_manual; 
-      // if the current delay has exceeded the intended delay, then call the appropriate function for that event 
+      
+      // if the current delay is close to the intended delay, then call the function for that event 
       if (curr_delay >= intended_delay) {
         event_fn();
       } else {
