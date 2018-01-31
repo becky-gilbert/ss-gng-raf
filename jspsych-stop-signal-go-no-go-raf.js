@@ -109,23 +109,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       stim_html = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="no-go-img"></div>';
       trial_stim = trial.no_go_stimulus;
     } 
-    
-    // draw first stimulus (go or no-go)
-    // use requestAnimationFrame so that the logged display start time is as close as possible to the real display start time
-    window.requestAnimationFrame(function(timestamp) {
-      display_element.innerHTML = stim_html;
-      start_time_manual = timestamp;
-      // keyboard listener logs the start time and uses that to get the RT, so it needs to be synchronised to the display onset (I think?)
-      if (trial.choices != jsPsych.NO_KEYS) {
-        keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
-          callback_function: after_response,
-          valid_responses: trial.choices,
-          rt_method: 'performance',
-          persist: false,
-          allow_held_key: false
-        });
-      }
-    });
 
     // if necessary, set up stop signal audio to be played at the stop signal onset time
     if (trial.trial_type_ss_gng.toLowerCase() === 'stop' && trial.stop_audio !== null) {
@@ -237,7 +220,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     function checkForTimeouts(timestamp, intended_delay, event_fn) {
       // compare current timestamp to that from the first stim onset to get the current time relative to stim onset
       var curr_delay = timestamp - start_time_manual; 
-      
       // if the current delay is close to the intended delay, then call the function for that event 
       if (curr_delay >= intended_delay) {
         event_fn();
@@ -247,20 +229,36 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
     }
 
-    // if this is a stop trial and the stop signal time is valid, call rAF with SS parameters
-    if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
-      var lower_dur = Math.floor(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
-      var upper_dur = Math.ceil(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
-      if ((trial.stop_signal_onset - lower_dur) <= (trial.est_frame_duration/2)) {
-        stop_signal_onset_adj = lower_dur;
-      } else {
-        stop_signal_onset_adj = upper_dur;
+    // draw first stimulus (go or no-go)
+    // use requestAnimationFrame so that the logged display start time is as close as possible to the real display start time
+    window.requestAnimationFrame(function(timestamp) {
+      display_element.innerHTML = stim_html;
+      start_time_manual = timestamp;
+      // keyboard listener logs the start time and uses that to get the RT, so it needs to be synchronised to the display onset (I think?)
+      if (trial.choices != jsPsych.NO_KEYS) {
+        keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
+          callback_function: after_response,
+          valid_responses: trial.choices,
+          rt_method: 'performance',
+          persist: false,
+          allow_held_key: false
+        });
       }
-      console.log('adjusted SS duration: ', stop_signal_onset_adj);
-      window.requestAnimationFrame(function(timestamp) {
-        checkForTimeouts(timestamp, stop_signal_onset_adj, showStopSignal);
-      });
-    }
+      // if this is a stop trial and the stop signal time is valid, continue calling rAF with SS parameters
+      if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
+        var lower_dur = Math.floor(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
+        var upper_dur = Math.ceil(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
+        if ((trial.stop_signal_onset - lower_dur) <= (trial.est_frame_duration/2)) {
+          stop_signal_onset_adj = lower_dur;
+        } else {
+          stop_signal_onset_adj = upper_dur;
+        }
+        console.log('adjusted SS duration: ', stop_signal_onset_adj);
+        window.requestAnimationFrame(function(timestamp) {
+          checkForTimeouts(timestamp, stop_signal_onset_adj, showStopSignal);
+        });
+      }
+    });
 
     // if this is a stop trial, set up the the timer to show the stop image and/or audio
     // if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
