@@ -57,7 +57,6 @@
     function estimateFramesPerSec(timestamp, callback) {
         // document.querySelector('#jspsych-content-wrapper').innerHTML = '<div class = "jspsych-content">Please wait...</div>';        
         // from http://jsfiddle.net/bn8kbw3t/
-        console.log('est fps timestamp: ',timestamp);
         if (frame_count > 0) {
             var last_time = frame_times[frame_count-1];
             frame_diffs[frame_count-1] = timestamp - last_time; 
@@ -66,7 +65,7 @@
         if (frame_count == fps_est_n_trials) {
             var sum = frame_diffs.reduce(function(a, b) {return a + b;});
             var avg = sum / (frame_diffs.length);
-            console.log(avg + ' refresh distance');
+            console.log('estimated frame duration: ', avg);
             fps_obj.est_fps = avg;
             // document.querySelector('#jspsych-content-wrapper').innerHTML = '';
             callback();
