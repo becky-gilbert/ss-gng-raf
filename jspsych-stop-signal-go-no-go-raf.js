@@ -226,7 +226,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     }
 
     function checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn) {
-      frame_count++;
       // compare current timestamp to that from the first stim onset to get the current time relative to stim onset
       var curr_delay = timestamp - start_time_manual; 
       // if the current delay is close to the intended delay, or if we've reached the intended frame count, then call the function for that event 
@@ -234,7 +233,9 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         event_fn();
       } else {
         // not enough time has elapsed, so call rAF with this function as the callback again
-        window.requestAnimationFrame(function(timestamp) {checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn);});
+        window.requestAnimationFrame(function(timestamp) {
+          frame_count++;
+          checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn);});
       }
     }
 
@@ -266,6 +267,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         stop_signal_target_frame_count = stop_signal_onset_adj/trial.est_frame_duration;
         console.log('adjusted SS target onset: ', stop_signal_onset_adj);
         window.requestAnimationFrame(function(timestamp) {
+          frame_count++;
           // subtract 2 from adjusted intended delay to account for rounding errors
           checkForTimeouts(timestamp, stop_signal_onset_adj - 2, stop_signal_target_frame_count, showStopSignal);
         });
