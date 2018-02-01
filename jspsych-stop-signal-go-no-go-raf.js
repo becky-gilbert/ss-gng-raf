@@ -148,6 +148,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         "stop_signal_onset": trial.stop_signal_onset,
         "stop_signal_onset_adj": stop_signal_onset_adj,
         "stop_signal_onset_log": stop_signal_onset_log,
+        "stop_signal_target_log_diff": stop_signal_onset_adj - stop_signal_onset_log,
         "stop_signal_target_frame_count": stop_signal_target_frame_count,
         "frame_count": frame_count
       };
