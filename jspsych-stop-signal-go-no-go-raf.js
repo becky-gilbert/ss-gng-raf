@@ -89,7 +89,9 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
 
     // use a prefixed version of rAF if necessary
     // from https://msdn.microsoft.com/en-us/library/hh920765(v=vs.85).aspx
-    // TO DO: record in results which method was used
+    // TO DO: 
+    // - record in results which method was used
+    // - add fallback to Date.now() timestamps for early implementations of rAF that pass a Date.now rather than performance.now timestamp
     if (!window.requestAnimationFrame) {
       window.requestAnimationFrame =
       window.mozRequestAnimationFrame ||
@@ -161,7 +163,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       // get timestamp to compare to start_time_manual, to get a manual RT measure
       var end_time_manual = performance.now();
       var rt_manual = end_time_manual - start_time_manual;
-      console.log('manual RT:', rt_manual);
 
       // after a valid response, the stimulus will have the CSS class 'responded'
       // which can be used to provide visual feedback that a response was recorded
@@ -172,7 +173,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         response = info;
         response.rt_manual = rt_manual;
       }
-      console.log('key listener RT:', response.rt);
+      console.log('RT:', response.rt);
 
       if (trial.response_ends_trial) {
         end_trial();
