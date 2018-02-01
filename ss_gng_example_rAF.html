@@ -296,6 +296,7 @@
         //preload_audio: ['a1.wav'],
         on_finish: function() {
             jsPsych.data.displayData();
+            jsPsych.data.get().localSave('csv','ss_gng_rAF_data.csv');
             // accuracy for stop trials
             var stop_trials = jsPsych.data.get().filter({task_segment: "main_trials",trial_type_ss_gng: "stop"}).select("accuracy");
             var stop_trial_acc = stop_trials.sum()/stop_trials.count();
