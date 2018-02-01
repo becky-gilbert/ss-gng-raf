@@ -97,6 +97,9 @@
             window.requestAnimationFrame(function(timestamp) {
                 estimateFramesPerSec(timestamp,callback);});
         },
+        on_finish: function(data) {
+            data.est_frame_duration = fps_obj.est_fps;
+        }
     };
     timeline.push(est_fps_trial);
 
