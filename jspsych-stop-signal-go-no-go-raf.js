@@ -86,6 +86,8 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     };
     var stop_signal_onset_log = null;
     var stop_signal_onset_adj = null;
+    var frame_count = null;
+    var stop_signal_target_frame_count = null;
 
     // use a prefixed version of rAF if necessary
     // from https://msdn.microsoft.com/en-us/library/hh920765(v=vs.85).aspx
@@ -145,7 +147,9 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         "key_press": response.key,
         "stop_signal_onset": trial.stop_signal_onset,
         "stop_signal_onset_adj": stop_signal_onset_adj,
-        "stop_signal_onset_log": stop_signal_onset_log
+        "stop_signal_onset_log": stop_signal_onset_log,
+        "stop_signal_target_frame_count": stop_signal_target_frame_count,
+        "frame_count": frame_count
       };
 
       // clear the display
@@ -220,15 +224,16 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       console.log('logged SS onset: ', stop_signal_onset_log);
     }
 
-    function checkForTimeouts(timestamp, intended_delay, event_fn) {
+    function checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn) {
+      frame_count++;
       // compare current timestamp to that from the first stim onset to get the current time relative to stim onset
       var curr_delay = timestamp - start_time_manual; 
-      // if the current delay is close to the intended delay, then call the function for that event 
-      if (curr_delay >= intended_delay) {
+      // if the current delay is close to the intended delay, or if we've reached the intended frame count, then call the function for that event 
+      if (curr_delay >= intended_delay || intended_frame_count == frame_count) {
         event_fn();
       } else {
         // not enough time has elapsed, so call rAF with this function as the callback again
-        window.requestAnimationFrame(function(timestamp) {checkForTimeouts(timestamp, intended_delay, event_fn);});
+        window.requestAnimationFrame(function(timestamp) {checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn);});
       }
     }
 
@@ -249,6 +254,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
       // if this is a stop trial and the stop signal time is valid, continue calling rAF with SS parameters
       if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
+        frame_count = 1;
         var lower_dur = Math.floor(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
         var upper_dur = Math.ceil(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
         if ((trial.stop_signal_onset - lower_dur) <= (trial.est_frame_duration/2)) {
@@ -256,10 +262,11 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         } else {
           stop_signal_onset_adj = upper_dur;
         }
+        stop_signal_target_frame_count = stop_signal_onset_adj/trial.est_frame_duration;
         console.log('adjusted SS target onset: ', stop_signal_onset_adj);
         window.requestAnimationFrame(function(timestamp) {
           // subtract 2 from adjusted intended delay to account for rounding errors
-          checkForTimeouts(timestamp, stop_signal_onset_adj - 2, showStopSignal);
+          checkForTimeouts(timestamp, stop_signal_onset_adj - 2, stop_signal_target_frame_count, showStopSignal);
         });
       }
     });
