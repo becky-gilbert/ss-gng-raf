@@ -78,7 +78,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
 
   plugin.trial = function(display_element, trial) {
 
-    var stim_html, trial_stim, keyboardListener;
+    var stim_html, trial_stim, keyboardListener, raf_ref;
     var response = {
       rt: null,
       key: null,
@@ -148,10 +148,15 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         "stop_signal_onset": trial.stop_signal_onset,
         "stop_signal_onset_adj": stop_signal_onset_adj,
         "stop_signal_onset_log": stop_signal_onset_log,
-        "stop_signal_target_log_diff": stop_signal_onset_adj - stop_signal_onset_log,
         "stop_signal_target_frame_count": stop_signal_target_frame_count,
         "frame_count": frame_count
       };
+
+      if (stop_signal_onset_log !== null) {
+        trial_data.stop_signal_target_log_diff = stop_signal_onset_adj - stop_signal_onset_log;
+      } else {
+        trial_data.stop_signal_target_log_diff = null;
+      }
 
       // clear the display
       display_element.innerHTML = '';
@@ -163,7 +168,8 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
     // function to handle responses by the subject
     var after_response = function(info) {  
 
-      // cancel any existing rAF callbacks
+      // cancel any existing rAF calls
+      window.cancelAnimationFrame(raf_ref);
 
       // get timestamp to compare to start_time_manual, to get a manual RT measure
       var end_time_manual = performance.now();
@@ -233,7 +239,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         event_fn();
       } else {
         // not enough time has elapsed, so call rAF with this function as the callback again
-        window.requestAnimationFrame(function(timestamp) {
+        raf_ref = window.requestAnimationFrame(function(timestamp) {
           frame_count++;
           checkForTimeouts(timestamp, intended_delay, intended_frame_count, event_fn);});
       }
@@ -265,7 +271,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         }
         stop_signal_target_frame_count = stop_signal_onset_adj/trial.est_frame_duration;
         console.log('adjusted SS target onset: ', stop_signal_onset_adj);
-        window.requestAnimationFrame(function(timestamp) {
+        raf_ref = window.requestAnimationFrame(function(timestamp) {
           frame_count=1;
           // subtract 2 from adjusted intended delay to account for rounding errors
           checkForTimeouts(timestamp, stop_signal_onset_adj - 2, stop_signal_target_frame_count, showStopSignal);
