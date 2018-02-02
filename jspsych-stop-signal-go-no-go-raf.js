@@ -273,32 +273,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
     });
 
-    // if this is a stop trial, set up the the timer to show the stop image and/or audio
-    // if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
-    //   if (trial.stop_audio !== null) {
-    //     // use requestAnimationFrame so that real stop signal onset time is closer to intended stop signal onset time
-    //     // and to synchronise the audio play with the visual stimulus display
-    //     jsPsych.pluginAPI.setTimeout(function() {
-    //       // show stop signal image
-    //       display_element.innerHTML = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="stop-img"></div>';
-    //       // start stop signal audio
-    //       if(context !== null){
-    //         startTime = context.currentTime;
-    //         source.start(startTime);
-    //       } else {
-    //         audio.play();
-    //       }
-    //     }, trial.stop_signal_onset);
-        
-    //   } else {
-    //     // use requestAnimationFrame so that real stop signal onset time is closer to intended stop signal onset time
-    //     jsPsych.pluginAPI.setTimeout(function() {
-    //       // show stop signal image
-    //       display_element.innerHTML = '<div id="jspsych-stop-signal-go-no-go-stim"><img src="'+trial.no_go_stimulus+'" id="stop-img"></div>';
-    //     }, trial.stop_signal_onset);
-    //   }
-    // }
-
   };
 
   return plugin;
