@@ -256,7 +256,6 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
       }
       // if this is a stop trial and the stop signal time is valid, continue calling rAF with SS parameters
       if (trial.trial_type_ss_gng.toLowerCase() == 'stop' && trial.stop_signal_onset >= 0) {
-        frame_count = 1;
         var lower_dur = Math.floor(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
         var upper_dur = Math.ceil(trial.stop_signal_onset/trial.est_frame_duration) * trial.est_frame_duration;
         if ((trial.stop_signal_onset - lower_dur) <= (trial.est_frame_duration/2)) {
@@ -267,7 +266,7 @@ jsPsych.plugins["stop-signal-go-no-go-raf"] = (function() {
         stop_signal_target_frame_count = stop_signal_onset_adj/trial.est_frame_duration;
         console.log('adjusted SS target onset: ', stop_signal_onset_adj);
         window.requestAnimationFrame(function(timestamp) {
-          frame_count++;
+          frame_count=1;
           // subtract 2 from adjusted intended delay to account for rounding errors
           checkForTimeouts(timestamp, stop_signal_onset_adj - 2, stop_signal_target_frame_count, showStopSignal);
         });
